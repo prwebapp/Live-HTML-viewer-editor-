@@ -1,0 +1,21 @@
+{
+  "name": "Live Code Editor",
+  "short_name": "CodeEditor",
+  "description": "HTML, CSS, and JS Live Viewer & Editor",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1e1e1e",
+  "theme_color": "#252526",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192/007acc/ffffff?text=Code",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512/007acc/ffffff?text=Code",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
