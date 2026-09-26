@@ -2,15 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Live Code Editor</title>
 
-  <!-- PWA Meta Tags -->
-  <link rel="manifest" href="manifest.json">
+  <!-- PWA & Web App Manifest -->
+  <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#252526">
+
+  <!-- iOS Safari Specific Configuration -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="CodeEditor">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23007acc' rx='100'/%3E%3Cpath fill='%23ffffff' d='M160 150L60 256l100 106v-50l-53-56 53-56v-50zm192 0v50l53 56-53 56v50l100-106-100-106zm-110 230h40l80-260h-40l-80 260z'/%3E%3C/svg%3E">
 
   <style>
     * {
@@ -68,6 +71,7 @@
       overflow: hidden;
     }
 
+    /* Side-by-Side Mode */
     .container.side-by-side {
       flex-direction: row;
     }
@@ -81,6 +85,7 @@
       border-bottom: none;
     }
 
+    /* Top-and-Bottom Mode */
     .container.top-and-bottom {
       flex-direction: column;
     }
@@ -158,6 +163,7 @@
       border: none;
     }
 
+    /* Automatic Mobile Responsive Layout Override */
     @media (max-width: 768px) {
       .container {
         flex-direction: column !important;
@@ -205,8 +211,9 @@
   </div>
 
   <script>
-    document.getElementById('html-code').value = `<h1>Hello PWA World!</h1>\n<p>Type code to test your live editor.</p>\n<button id="btn">Click Me</button>`;
-    document.getElementById('css-code').value = `body {\n  font-family: sans-serif;\n  padding: 15px;\n  color: #333;\n}\n\nh1 {\n  color: #007acc;\n}\n\nbutton {\n  padding: 10px 20px;\n  background: #007acc;\n  color: white;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n}`;
+    // Initial Code
+    document.getElementById('html-code').value = `<h1>Hello Mobile PWA!</h1>\n<p>Type code above/left to view live updates.</p>\n<button id="btn">Click Me</button>`;
+    document.getElementById('css-code').value = `body {\n  font-family: sans-serif;\n  padding: 15px;\n  color: #333;\n}\n\nh1 {\n  color: #007acc;\n  font-size: 1.5rem;\n}\n\nbutton {\n  padding: 10px 20px;\n  background: #007acc;\n  color: white;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n}`;
     document.getElementById('js-code').value = `document.getElementById('btn').addEventListener('click', () => {\n  alert('Button clicked successfully!');\n});`;
 
     function switchTab(tab) {
@@ -275,12 +282,12 @@
 
     updatePreview();
 
-    // Register PWA Service Worker (relative path works automatically on GitHub Pages)
+    // Register Service Worker using relative path for GitHub Pages subfolder compatibility
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('PWA Service Worker registered'))
-          .catch(err => console.error('PWA Service Worker registration failed:', err));
+          .then(reg => console.log('Service Worker registered with scope:', reg.scope))
+          .catch(err => console.error('Service Worker registration failed:', err));
       });
     }
   </script>
