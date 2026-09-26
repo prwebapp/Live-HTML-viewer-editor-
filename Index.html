@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Code Editor & Viewer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #1e1e1e;
+      color: #fff;
+    }
+
+    header {
+      padding: 10px 20px;
+      background-color: #252526;
+      border-bottom: 1px solid #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #cccccc;
+    }
+
+    .container {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 45px);
+    }
+
+    .editor-section {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      border-right: 2px solid #333;
+    }
+
+    .tabs {
+      display: flex;
+      background-color: #252526;
+      border-bottom: 1px solid #333;
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      font-size: 0.9rem;
+      border-right: 1px solid #333;
+      outline: none;
+    }
+
+    .tab-btn.active {
+      background-color: #1e1e1e;
+      color: #007acc;
+      border-top: 2px solid #007acc;
+    }
+
+    .code-area {
+      flex: 1;
+      position: relative;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      border: none;
+      padding: 15px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      resize: none;
+      outline: none;
+      display: none;
+    }
+
+    textarea.active {
+      display: block;
+    }
+
+    .preview-section {
+      width: 50%;
+      background-color: #ffffff;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Live Code Editor</h1>
+  </header>
+
+  <div class="container">
+    <!-- Editor Side -->
+    <div class="editor-section">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('html')">HTML</button>
+        <button class="tab-btn" onclick="switchTab('css')">CSS</button>
+        <button class="tab-btn" onclick="switchTab('js')">JS</button>
+      </div>
+      
+      <div class="code-area">
+        <textarea id="html-code" class="active" placeholder="HTML code here..." oninput="updatePreview()"></textarea>
+        <textarea id="css-code" placeholder="CSS code here..." oninput="updatePreview()"></textarea>
+        <textarea id="js-code" placeholder="JS code here..." oninput="updatePreview()"></textarea>
+      </div>
+    </div>
+
+    <!-- Preview Side -->
+    <div class="preview-section">
+      <iframe id="preview"></iframe>
+    </div>
+  </div>
+
+  <script>
+    // Initial Default Code
+    document.getElementById('html-code').value = `<h1>Hello World!</h1>\n<p>Type code on the left to see live changes.</p>\n<button id="btn">Click Me</button>`;
+    
+    document.getElementById('css-code').value = `body {\n  font-family: sans-serif;\n  padding: 20px;\n  color: #333;\n}\n\nh1 {\n  color: #007acc;\n}\n\nbutton {\n  padding: 8px 16px;\n  background: #007acc;\n  color: white;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n}`;
+    
+    document.getElementById('js-code').value = `document.getElementById('btn').addEventListener('click', () => {\n  alert('Button clicked!');\n});`;
+
+    // Switch between HTML, CSS, and JS tabs
+    function switchTab(tab) {
+      const tabs = document.querySelectorAll('.tab-btn');
+      const textareas = document.querySelectorAll('textarea');
+
+      tabs.forEach(t => t.classList.remove('active'));
+      textareas.forEach(ta => ta.classList.remove('active'));
+
+      if (tab === 'html') {
+        tabs[0].classList.add('active');
+        document.getElementById('html-code').classList.add('active');
+      } else if (tab === 'css') {
+        tabs[1].classList.add('active');
+        document.getElementById('css-code').classList.add('active');
+      } else if (tab === 'js') {
+        tabs[2].classList.add('active');
+        document.getElementById('js-code').classList.add('active');
+      }
+    }
+
+    // Update the live iframe preview
+    function updatePreview() {
+      const html = document.getElementById('html-code').value;
+      const css = document.getElementById('css-code').value;
+      const js = document.getElementById('js-code').value;
+
+      const iframe = document.getElementById('preview');
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+      const fullSource = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>${css}</style>
+        </head>
+        <body>
+          ${html}
+          <script>${js}<\/script>
+        </body>
+        </html>
+      `;
+
+      iframeDoc.open();
+      iframeDoc.write(fullSource);
+      iframeDoc.close();
+    }
+
+    // Initial render call
+    updatePreview();
+  </script>
+</body>
+</html>
