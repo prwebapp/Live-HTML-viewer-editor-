@@ -18,40 +18,89 @@
       flex-direction: column;
       background-color: #1e1e1e;
       color: #fff;
+      overflow: hidden;
     }
 
     header {
-      padding: 10px 20px;
+      padding: 10px 15px;
       background-color: #252526;
       border-bottom: 1px solid #333;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-shrink: 0;
     }
 
     header h1 {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 500;
       color: #cccccc;
     }
 
+    .layout-btn {
+      background: #007acc;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .layout-btn:hover {
+      background: #005999;
+    }
+
+    /* Container holding Editor and Preview */
     .container {
       display: flex;
       flex: 1;
       height: calc(100vh - 45px);
+      overflow: hidden;
     }
 
-    .editor-section {
+    /* Side-by-Side Mode (Default Desktop) */
+    .container.side-by-side {
+      flex-direction: row;
+    }
+    .container.side-by-side .editor-section,
+    .container.side-by-side .preview-section {
       width: 50%;
+      height: 100%;
+    }
+    .container.side-by-side .editor-section {
+      border-right: 2px solid #333;
+      border-bottom: none;
+    }
+
+    /* Top-and-Bottom Mode */
+    .container.top-and-bottom {
+      flex-direction: column;
+    }
+    .container.top-and-bottom .editor-section,
+    .container.top-and-bottom .preview-section {
+      width: 100%;
+      height: 50%;
+    }
+    .container.top-and-bottom .editor-section {
+      border-bottom: 2px solid #333;
+      border-right: none;
+    }
+
+    /* Editor Styling */
+    .editor-section {
       display: flex;
       flex-direction: column;
-      border-right: 2px solid #333;
+      background-color: #1e1e1e;
     }
 
     .tabs {
       display: flex;
       background-color: #252526;
       border-bottom: 1px solid #333;
+      flex-shrink: 0;
     }
 
     .tab-btn {
@@ -60,7 +109,7 @@
       border: none;
       color: #888;
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       border-right: 1px solid #333;
       outline: none;
     }
@@ -82,7 +131,7 @@
       background-color: #1e1e1e;
       color: #d4d4d4;
       border: none;
-      padding: 15px;
+      padding: 12px;
       font-family: "Courier New", Courier, monospace;
       font-size: 14px;
       line-height: 1.5;
@@ -95,8 +144,8 @@
       display: block;
     }
 
+    /* Preview Styling */
     .preview-section {
-      width: 50%;
       background-color: #ffffff;
     }
 
@@ -105,15 +154,35 @@
       height: 100%;
       border: none;
     }
+
+    /* Automatic Mobile Responsiveness */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column !important;
+      }
+      .editor-section, 
+      .preview-section {
+        width: 100% !important;
+        height: 50% !important;
+      }
+      .editor-section {
+        border-right: none !important;
+        border-bottom: 2px solid #333 !important;
+      }
+      .layout-btn {
+        display: none; /* Hide toggle button on small mobile screens where side-by-side isn't practical */
+      }
+    }
   </style>
 </head>
 <body>
 
   <header>
     <h1>Live Code Editor</h1>
+    <button class="layout-btn" id="toggle-layout-btn" onclick="toggleLayout()">Layout: Side-by-Side</button>
   </header>
 
-  <div class="container">
+  <div class="container side-by-side" id="main-container">
     <!-- Editor Side -->
     <div class="editor-section">
       <div class="tabs">
@@ -137,13 +206,13 @@
 
   <script>
     // Initial Default Code
-    document.getElementById('html-code').value = `<h1>Hello World!</h1>\n<p>Type code on the left to see live changes.</p>\n<button id="btn">Click Me</button>`;
+    document.getElementById('html-code').value = `<h1>Hello Mobile World!</h1>\n<p>Type code above/left to see real-time updates.</p>\n<button id="btn">Click Me</button>`;
     
-    document.getElementById('css-code').value = `body {\n  font-family: sans-serif;\n  padding: 20px;\n  color: #333;\n}\n\nh1 {\n  color: #007acc;\n}\n\nbutton {\n  padding: 8px 16px;\n  background: #007acc;\n  color: white;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n}`;
+    document.getElementById('css-code').value = `body {\n  font-family: sans-serif;\n  padding: 15px;\n  color: #333;\n}\n\nh1 {\n  color: #007acc;\n  font-size: 1.5rem;\n}\n\nbutton {\n  padding: 10px 20px;\n  background: #007acc;\n  color: white;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n}`;
     
-    document.getElementById('js-code').value = `document.getElementById('btn').addEventListener('click', () => {\n  alert('Button clicked!');\n});`;
+    document.getElementById('js-code').value = `document.getElementById('btn').addEventListener('click', () => {\n  alert('Button clicked successfully!');\n});`;
 
-    // Switch between HTML, CSS, and JS tabs
+    // Tab Switcher
     function switchTab(tab) {
       const tabs = document.querySelectorAll('.tab-btn');
       const textareas = document.querySelectorAll('textarea');
@@ -163,7 +232,26 @@
       }
     }
 
-    // Update the live iframe preview
+    // Toggle Layout (Side-by-Side vs Top-and-Bottom)
+    let currentLayout = 'side-by-side';
+    function toggleLayout() {
+      const container = document.getElementById('main-container');
+      const btn = document.getElementById('toggle-layout-btn');
+
+      if (currentLayout === 'side-by-side') {
+        container.classList.remove('side-by-side');
+        container.classList.add('top-and-bottom');
+        btn.textContent = 'Layout: Top / Bottom';
+        currentLayout = 'top-and-bottom';
+      } else {
+        container.classList.remove('top-and-bottom');
+        container.classList.add('side-by-side');
+        btn.textContent = 'Layout: Side-by-Side';
+        currentLayout = 'side-by-side';
+      }
+    }
+
+    // Live Preview Update
     function updatePreview() {
       const html = document.getElementById('html-code').value;
       const css = document.getElementById('css-code').value;
@@ -176,6 +264,7 @@
         <!DOCTYPE html>
         <html>
         <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>${css}</style>
         </head>
         <body>
@@ -190,7 +279,7 @@
       iframeDoc.close();
     }
 
-    // Initial render call
+    // Initial load call
     updatePreview();
   </script>
 </body>
