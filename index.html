@@ -48,7 +48,12 @@
       color: #cccccc;
     }
 
-    .layout-btn {
+    .header-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
       background: #007acc;
       color: white;
       border: none;
@@ -60,8 +65,18 @@
       transition: background 0.2s;
     }
 
-    .layout-btn:hover {
+    .btn:hover {
       background: #005999;
+    }
+
+    .btn-secondary {
+      background: #333333;
+      color: #ccc;
+    }
+
+    .btn-secondary:hover {
+      background: #444444;
+      color: #fff;
     }
 
     .container {
@@ -69,6 +84,7 @@
       flex: 1;
       height: calc(100vh - 45px);
       overflow: hidden;
+      position: relative;
     }
 
     /* Side-by-Side Mode */
@@ -97,6 +113,15 @@
     .container.top-and-bottom .editor-section {
       border-bottom: 2px solid #333;
       border-right: none;
+    }
+
+    /* Collapsed State */
+    .container.editor-collapsed .editor-section {
+      display: none !important;
+    }
+    .container.editor-collapsed .preview-section {
+      width: 100% !important;
+      height: 100% !important;
     }
 
     .editor-section {
@@ -155,6 +180,7 @@
 
     .preview-section {
       background-color: #ffffff;
+      flex: 1;
     }
 
     iframe {
@@ -177,7 +203,7 @@
         border-right: none !important;
         border-bottom: 2px solid #333 !important;
       }
-      .layout-btn {
+      #toggle-layout-btn {
         display: none;
       }
     }
@@ -187,11 +213,14 @@
 
   <header>
     <h1>Live Code Editor</h1>
-    <button class="layout-btn" id="toggle-layout-btn" onclick="toggleLayout()">Layout: Side-by-Side</button>
+    <div class="header-controls">
+      <button class="btn btn-secondary" id="toggle-editor-btn" onclick="toggleEditor()">Hide Code</button>
+      <button class="btn" id="toggle-layout-btn" onclick="toggleLayout()">Layout: Side-by-Side</button>
+    </div>
   </header>
 
   <div class="container side-by-side" id="main-container">
-    <div class="editor-section">
+    <div class="editor-section" id="editor-box">
       <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('html')">HTML</button>
         <button class="tab-btn" onclick="switchTab('css')">CSS</button>
@@ -253,6 +282,23 @@
       }
     }
 
+    // Collapse / Expand Editor Functionality
+    let isEditorCollapsed = false;
+    function toggleEditor() {
+      const container = document.getElementById('main-container');
+      const btn = document.getElementById('toggle-editor-btn');
+
+      isEditorCollapsed = !isEditorCollapsed;
+
+      if (isEditorCollapsed) {
+        container.classList.add('editor-collapsed');
+        btn.textContent = 'Show Code';
+      } else {
+        container.classList.remove('editor-collapsed');
+        btn.textContent = 'Hide Code';
+      }
+    }
+
     function updatePreview() {
       const html = document.getElementById('html-code').value;
       const css = document.getElementById('css-code').value;
@@ -282,7 +328,7 @@
 
     updatePreview();
 
-    // Register Service Worker using relative path for GitHub Pages subfolder compatibility
+    // Register Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
