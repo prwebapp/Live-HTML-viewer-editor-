@@ -3,7 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Code Editor & Viewer</title>
+  <title>Live Code Editor</title>
+
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#252526">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CodeEditor">
+
   <style>
     * {
       box-sizing: border-box;
@@ -53,7 +61,6 @@
       background: #005999;
     }
 
-    /* Container holding Editor and Preview */
     .container {
       display: flex;
       flex: 1;
@@ -61,7 +68,6 @@
       overflow: hidden;
     }
 
-    /* Side-by-Side Mode (Default Desktop) */
     .container.side-by-side {
       flex-direction: row;
     }
@@ -75,7 +81,6 @@
       border-bottom: none;
     }
 
-    /* Top-and-Bottom Mode */
     .container.top-and-bottom {
       flex-direction: column;
     }
@@ -89,7 +94,6 @@
       border-right: none;
     }
 
-    /* Editor Styling */
     .editor-section {
       display: flex;
       flex-direction: column;
@@ -144,7 +148,6 @@
       display: block;
     }
 
-    /* Preview Styling */
     .preview-section {
       background-color: #ffffff;
     }
@@ -155,7 +158,6 @@
       border: none;
     }
 
-    /* Automatic Mobile Responsiveness */
     @media (max-width: 768px) {
       .container {
         flex-direction: column !important;
@@ -170,7 +172,7 @@
         border-bottom: 2px solid #333 !important;
       }
       .layout-btn {
-        display: none; /* Hide toggle button on small mobile screens where side-by-side isn't practical */
+        display: none;
       }
     }
   </style>
@@ -183,7 +185,6 @@
   </header>
 
   <div class="container side-by-side" id="main-container">
-    <!-- Editor Side -->
     <div class="editor-section">
       <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('html')">HTML</button>
@@ -198,21 +199,16 @@
       </div>
     </div>
 
-    <!-- Preview Side -->
     <div class="preview-section">
       <iframe id="preview"></iframe>
     </div>
   </div>
 
   <script>
-    // Initial Default Code
-    document.getElementById('html-code').value = `<h1>Hello Mobile World!</h1>\n<p>Type code above/left to see real-time updates.</p>\n<button id="btn">Click Me</button>`;
-    
-    document.getElementById('css-code').value = `body {\n  font-family: sans-serif;\n  padding: 15px;\n  color: #333;\n}\n\nh1 {\n  color: #007acc;\n  font-size: 1.5rem;\n}\n\nbutton {\n  padding: 10px 20px;\n  background: #007acc;\n  color: white;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n}`;
-    
+    document.getElementById('html-code').value = `<h1>Hello PWA World!</h1>\n<p>Type code to test your live editor.</p>\n<button id="btn">Click Me</button>`;
+    document.getElementById('css-code').value = `body {\n  font-family: sans-serif;\n  padding: 15px;\n  color: #333;\n}\n\nh1 {\n  color: #007acc;\n}\n\nbutton {\n  padding: 10px 20px;\n  background: #007acc;\n  color: white;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n}`;
     document.getElementById('js-code').value = `document.getElementById('btn').addEventListener('click', () => {\n  alert('Button clicked successfully!');\n});`;
 
-    // Tab Switcher
     function switchTab(tab) {
       const tabs = document.querySelectorAll('.tab-btn');
       const textareas = document.querySelectorAll('textarea');
@@ -232,7 +228,6 @@
       }
     }
 
-    // Toggle Layout (Side-by-Side vs Top-and-Bottom)
     let currentLayout = 'side-by-side';
     function toggleLayout() {
       const container = document.getElementById('main-container');
@@ -251,7 +246,6 @@
       }
     }
 
-    // Live Preview Update
     function updatePreview() {
       const html = document.getElementById('html-code').value;
       const css = document.getElementById('css-code').value;
@@ -279,8 +273,16 @@
       iframeDoc.close();
     }
 
-    // Initial load call
     updatePreview();
+
+    // Register PWA Service Worker (relative path works automatically on GitHub Pages)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('PWA Service Worker registered'))
+          .catch(err => console.error('PWA Service Worker registration failed:', err));
+      });
+    }
   </script>
 </body>
 </html>
