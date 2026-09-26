@@ -1,4 +1,4 @@
-const CACHE_NAME = 'code-editor-v2';
+const CACHE_NAME = 'code-editor-v3';
 const ASSETS = [
   './',
   './index.html',
