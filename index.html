@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Live Code Editor</title>
 
-  <!-- PWA & Web App Manifest -->
-  <link rel="manifest" href="./manifest.json">
+  <!-- Dynamic Inline Web App Manifest -->
+  <link id="manifest-placeholder" rel="manifest">
   <meta name="theme-color" content="#252526">
 
-  <!-- iOS Safari Specific Configuration -->
+  <!-- iOS Safari PWA Configuration -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="CodeEditor">
@@ -33,36 +33,40 @@
     }
 
     header {
-      padding: 10px 15px;
+      padding: 8px 12px;
       background-color: #252526;
       border-bottom: 1px solid #333;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-shrink: 0;
+      gap: 10px;
     }
 
     header h1 {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 500;
       color: #cccccc;
+      white-space: nowrap;
     }
 
     .header-controls {
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     .btn {
       background: #007acc;
       color: white;
       border: none;
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 500;
       transition: background 0.2s;
+      white-space: nowrap;
     }
 
     .btn:hover {
@@ -87,7 +91,7 @@
       position: relative;
     }
 
-    /* Side-by-Side Mode */
+    /* Side-by-Side Layout */
     .container.side-by-side {
       flex-direction: row;
     }
@@ -101,7 +105,7 @@
       border-bottom: none;
     }
 
-    /* Top-and-Bottom Mode */
+    /* Top-and-Bottom Layout */
     .container.top-and-bottom {
       flex-direction: column;
     }
@@ -115,7 +119,7 @@
       border-right: none;
     }
 
-    /* Collapsed State */
+    /* Collapsed Editor Layout */
     .container.editor-collapsed .editor-section {
       display: none !important;
     }
@@ -181,6 +185,7 @@
     .preview-section {
       background-color: #ffffff;
       flex: 1;
+      position: relative;
     }
 
     iframe {
@@ -189,7 +194,7 @@
       border: none;
     }
 
-    /* Automatic Mobile Responsive Layout Override */
+    /* Mobile Responsive Overrides */
     @media (max-width: 768px) {
       .container {
         flex-direction: column !important;
@@ -215,6 +220,7 @@
     <h1>Live Code Editor</h1>
     <div class="header-controls">
       <button class="btn btn-secondary" id="toggle-editor-btn" onclick="toggleEditor()">Hide Code</button>
+      <button class="btn btn-secondary" id="fullscreen-btn" onclick="goFullscreen()">Fullscreen</button>
       <button class="btn" id="toggle-layout-btn" onclick="toggleLayout()">Layout: Side-by-Side</button>
     </div>
   </header>
@@ -228,22 +234,27 @@
       </div>
       
       <div class="code-area">
-        <textarea id="html-code" class="active" placeholder="HTML code here..." oninput="updatePreview()"></textarea>
-        <textarea id="css-code" placeholder="CSS code here..." oninput="updatePreview()"></textarea>
-        <textarea id="js-code" placeholder="JS code here..." oninput="updatePreview()"></textarea>
+        <textarea id="html-code" class="active" placeholder="HTML code here..." oninput="onCodeChange()"></textarea>
+        <textarea id="css-code" placeholder="CSS code here..." oninput="onCodeChange()"></textarea>
+        <textarea id="js-code" placeholder="JS code here..." oninput="onCodeChange()"></textarea>
       </div>
     </div>
 
-    <div class="preview-section">
+    <div class="preview-section" id="preview-box">
       <iframe id="preview"></iframe>
     </div>
   </div>
 
   <script>
-    // Initial Code
-    document.getElementById('html-code').value = `<h1>Hello Mobile PWA!</h1>\n<p>Type code above/left to view live updates.</p>\n<button id="btn">Click Me</button>`;
-    document.getElementById('css-code').value = `body {\n  font-family: sans-serif;\n  padding: 15px;\n  color: #333;\n}\n\nh1 {\n  color: #007acc;\n  font-size: 1.5rem;\n}\n\nbutton {\n  padding: 10px 20px;\n  background: #007acc;\n  color: white;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n}`;
-    document.getElementById('js-code').value = `document.getElementById('btn').addEventListener('click', () => {\n  alert('Button clicked successfully!');\n});`;
+    // Initial Fallback Templates
+    const defaultHTML = `<h1>Hello Live Editor!</h1>\n<p>Hide code or trigger native Fullscreen mode below.</p>\n<button id="btn">Click Me</button>`;
+    const defaultCSS = `body {\n  font-family: sans-serif;\n  padding: 20px;\n  color: #333;\n}\n\nh1 {\n  color: #007acc;\n}\n\nbutton {\n  padding: 10px 20px;\n  background: #007acc;\n  color: white;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n}`;
+    const defaultJS = `document.getElementById('btn').addEventListener('click', () => {\n  alert('Button clicked successfully!');\n});`;
+
+    // Load persisted local storage values or fall back to defaults
+    document.getElementById('html-code').value = localStorage.getItem('pwa_editor_html') ?? defaultHTML;
+    document.getElementById('css-code').value = localStorage.getItem('pwa_editor_css') ?? defaultCSS;
+    document.getElementById('js-code').value = localStorage.getItem('pwa_editor_js') ?? defaultJS;
 
     function switchTab(tab) {
       const tabs = document.querySelectorAll('.tab-btn');
@@ -282,7 +293,6 @@
       }
     }
 
-    // Collapse / Expand Editor Functionality
     let isEditorCollapsed = false;
     function toggleEditor() {
       const container = document.getElementById('main-container');
@@ -297,6 +307,35 @@
         container.classList.remove('editor-collapsed');
         btn.textContent = 'Hide Code';
       }
+    }
+
+    // Hardware/Native Fullscreen Trigger
+    function goFullscreen() {
+      const previewBox = document.getElementById('preview-box');
+      
+      // Auto-collapse code editor when invoking Fullscreen
+      if (!isEditorCollapsed) {
+        toggleEditor();
+      }
+
+      if (previewBox.requestFullscreen) {
+        previewBox.requestFullscreen();
+      } else if (previewBox.webkitRequestFullscreen) { /* Safari */
+        previewBox.webkitRequestFullscreen();
+      } else if (previewBox.msRequestFullscreen) { /* IE11 */
+        previewBox.msRequestFullscreen();
+      }
+    }
+
+    function onCodeChange() {
+      saveToLocalStorage();
+      updatePreview();
+    }
+
+    function saveToLocalStorage() {
+      localStorage.setItem('pwa_editor_html', document.getElementById('html-code').value);
+      localStorage.setItem('pwa_editor_css', document.getElementById('css-code').value);
+      localStorage.setItem('pwa_editor_js', document.getElementById('js-code').value);
     }
 
     function updatePreview() {
@@ -326,14 +365,58 @@
       iframeDoc.close();
     }
 
+    // Render Initial Frame
     updatePreview();
 
-    // Register Service Worker
+    // Dynamically Inject Data URI Manifest for Self-Contained PWA Installation
+    const manifestObj = {
+      "id": "single-file-live-code-editor",
+      "name": "Live Code Editor",
+      "short_name": "CodeEditor",
+      "description": "HTML, CSS, and JS Live Viewer & Editor",
+      "start_url": "./index.html",
+      "scope": "./",
+      "display": "standalone",
+      "orientation": "any",
+      "background_color": "#1e1e1e",
+      "theme_color": "#252526",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23007acc' rx='100'/%3E%3Cpath fill='%23ffffff' d='M160 150L60 256l100 106v-50l-53-56 53-56v-50zm192 0v50l53 56-53 56v50l100-106-100-106zm-110 230h40l80-260h-40l-80 260z'/%3E%3C/svg%3E",
+          "sizes": "192x192 512x512",
+          "type": "image/svg+xml",
+          "purpose": "any maskable"
+        }
+      ]
+    };
+
+    const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/json' });
+    document.getElementById('manifest-placeholder').setAttribute('href', URL.createObjectURL(manifestBlob));
+
+    // Register Inline Service Worker via Blob
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('Service Worker registered with scope:', reg.scope))
-          .catch(err => console.error('Service Worker registration failed:', err));
+        const swCode = `
+          const CACHE_NAME = 'single-file-code-editor-v1';
+          self.addEventListener('install', (e) => {
+            self.skipWaiting();
+          });
+          self.addEventListener('activate', (e) => {
+            e.waitUntil(clients.claim());
+          });
+          self.addEventListener('fetch', (e) => {
+            e.respondWith(
+              fetch(e.request).catch(() => caches.match(e.request))
+            );
+          });
+        `;
+
+        const swBlob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(swBlob);
+
+        navigator.serviceWorker.register(swUrl, { scope: './' })
+          .then(reg => console.log('Inline SW registered'))
+          .catch(err => console.error('Inline SW failed:', err));
       });
     }
   </script>
